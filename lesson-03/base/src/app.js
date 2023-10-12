@@ -1,12 +1,12 @@
 async function getRecipes() {
-    const response = await fetch('http://localhost:3030/jsonstore/cookbook/recipes');
+    const response = await fetch('http://localhost:3030/data/recipes?select=_id%2Cname%2Cimg');
     const recipes = await response.json();
 
-    return Object.values(recipes);
+    return recipes;
 }
 
 async function getRecipeById(id) {
-    const response = await fetch('http://localhost:3030/jsonstore/cookbook/details/' + id);
+    const response = await fetch('http://localhost:3030/data/recipes/' + id);
     const recipe = await response.json();
 
     return recipe;
@@ -47,6 +47,21 @@ function createRecipeCard(recipe) {
 }
 
 window.addEventListener('load', async () => {
+
+    document.getElementById('logoutBtn').addEventListener('click',  () => {
+        const token = sessionStorage.getItem('accessToken');
+        fetch('http://localhost:3030/users/logout', {
+            headers : {
+                'X-Authorization' : token
+            }
+        });
+    
+        sessionStorage.removeItem('accessToken');
+        window.location = '/';
+    })
+
+    checkUser();
+    
     const main = document.querySelector('main');
 
     const recipes = await getRecipes();
@@ -55,6 +70,29 @@ window.addEventListener('load', async () => {
     main.innerHTML = '';
     cards.forEach(c => main.appendChild(c));
 });
+
+document.getElementById('logoutBtn').addEventListener('click',  () => {
+    const token = sessionStorage.getItem('accessToken');
+    fetch('http://localhost:3030/users/logout', {
+        headers : {
+            'X-Authorization' : token
+        }
+    });
+
+    sessionStorage.removeItem('accessToken');
+    window.location = '/';
+})
+
+function checkUser(){
+    const token = sessionStorage.getItem('accessToken');
+
+    if(token != null){
+        document.getElementById('user').style.display = 'inline-block';
+    }else{
+        document.getElementById('guest').style.display = 'inline-block';
+
+    }
+}
 
 function e(type, attributes, ...content) {
     const result = document.createElement(type);
